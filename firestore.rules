@@ -1,18 +1,63 @@
-rules_version='2'
+rules_version = '2';
 
+// Every tenant lives under orgs/{orgId}. A user's org and role come from Auth
+// custom claims ({orgId, role}) set by the seed script, so no rule needs a
+// get(). Documents, chunks and messages are written only by Cloud Functions
+// (Admin SDK bypasses these rules); clients read what their org owns.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 11, 14);
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function inOrg(orgId) {
+      return signedIn() && request.auth.token.get('orgId', null) == orgId;
+    }
+
+    function isOrgAdmin(orgId) {
+      return inOrg(orgId) && request.auth.token.get('role', null) == 'admin';
+    }
+
+    function isOwner(orgId) {
+      return inOrg(orgId) && resource.data.uid == request.auth.uid;
+    }
+
+    match /orgs/{orgId} {
+      allow read: if inOrg(orgId);
+      allow write: if false;
+
+      match /members/{uid} {
+        allow read: if (inOrg(orgId) && request.auth.uid == uid) || isOrgAdmin(orgId);
+        allow write: if false;
+      }
+
+      // Document metadata and classification; written by the indexing trigger.
+      match /documents/{docId} {
+        allow read: if inOrg(orgId);
+        allow write: if false;
+      }
+
+      // Embedded passages are only ever read server-side by the chat agent.
+      match /chunks/{chunkId} {
+        allow read, write: if false;
+      }
+
+      // Conversations are private to the employee who started them. Lists
+      // must filter on uid == request.auth.uid for these rules to allow them.
+      match /conversations/{conversationId} {
+        allow read: if isOwner(orgId);
+        allow update: if isOwner(orgId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title']);
+        allow create, delete: if false;
+
+        // Readable by the conversation's owner, checked on the parent so the
+        // client can list a thread without filtering on uid.
+        match /messages/{messageId} {
+          allow read: if inOrg(orgId)
+            && get(/databases/$(database)/documents/orgs/$(orgId)/conversations/$(conversationId)).data.uid == request.auth.uid;
+          allow write: if false;
+        }
+      }
     }
   }
 }

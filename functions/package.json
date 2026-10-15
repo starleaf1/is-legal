@@ -1,10 +1,14 @@
 {
   "main": "lib/index.js",
   "scripts": {
-    "genkit:start": "genkit start -- tsx --watch src/genkit-sample.ts",
-    "lint": "eslint --ext .js,.ts .",
+    "genkit:start": "GCLOUD_PROJECT=demo-is-legal FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 genkit start -- tsx --watch src/index.ts",
+    "lint": "ESLINT_USE_FLAT_CONFIG=false eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "test": "tsx --test src/**/*.test.ts",
+    "seed": "tsx scripts/seed.ts",
+    "smoke:gemini": "tsx scripts/smoke-gemini.ts",
+    "smoke:ask": "tsx scripts/smoke-ask.ts",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -18,10 +22,10 @@
   "dependencies": {
     "@genkit-ai/firebase": "^1.42.0",
     "@genkit-ai/google-genai": "^1.42.0",
-    "express": "^5.3.0",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.0",
-    "genkit": "^1.42.0"
+    "genkit": "^1.42.0",
+    "unpdf": "^1.8.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",

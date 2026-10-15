@@ -44,3 +44,7 @@ coverage/
 .DS_Store
 Thumbs.db
 *.sw?
+
+# Emulator data exported on exit by `pnpm emulators`
+.emulator-data/
+firebase-export-*

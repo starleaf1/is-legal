@@ -3,13 +3,16 @@
   "include": [
     "src"
   ],
+  "exclude": [
+    "src/**/*.test.ts"
+  ],
   "compilerOptions": {
     "module": "NodeNext",
     "noImplicitReturns": true,
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017",
+    "target": "es2022",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "moduleResolution": "nodenext",

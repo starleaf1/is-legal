@@ -1,9 +1,14 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "rootDir": "."
   },
   "include": [
-    ".eslintrc.js"
-  ]
+    ".eslintrc.js",
+    "src/**/*.test.ts",
+    "scripts/**/*.ts"
+  ],
+  "exclude": []
 }

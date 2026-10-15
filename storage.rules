@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Org documents live at orgs/{orgId}/documents/{docId}/{fileName}. Firestore
+// stores the storage path (never a download URL, which would let anyone
+// holding the link read the file), and the app reads files through the SDK so
+// these rules apply on every read. The indexing trigger and the
+// deleteDocument callable use the Admin SDK.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /orgs/{orgId}/documents/{docId}/{fileName} {
+      function inOrg() {
+        return request.auth != null && request.auth.token.get('orgId', null) == orgId;
+      }
+
+      function isOrgAdmin() {
+        return inOrg() && request.auth.token.get('role', null) == 'admin';
+      }
+
+      allow read: if inOrg();
+      allow create: if isOrgAdmin()
+        // Each upload gets a fresh docId, so nothing is ever replaced.
+        && resource == null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('application/pdf|text/plain|text/markdown|text/x-markdown')
+        && request.resource.metadata.uploadedBy == request.auth.uid;
+      // Deletion goes through the deleteDocument callable so chunks and
+      // metadata are removed with the file.
+      allow update, delete: if false;
+    }
+
+    // Everything else is denied.
+  }
+}
