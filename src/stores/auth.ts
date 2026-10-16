@@ -28,8 +28,9 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => role.value === 'admin')
   const displayName = computed(() => user.value?.displayName || user.value?.email || '')
 
-  // Claims are set by the seed script; they decide which org's data the
-  // security rules and functions let this user see.
+  // Claims are set with the Admin SDK (by the seed script on the emulators);
+  // they decide which org's data the security rules and functions let this
+  // user see.
   const load = async (next: User | null) => {
     if (!next) {
       user.value = null

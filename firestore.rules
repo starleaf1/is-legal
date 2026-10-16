@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // Every tenant lives under orgs/{orgId}. A user's org and role come from Auth
-// custom claims ({orgId, role}) set by the seed script, so no rule needs a
+// custom claims ({orgId, role}) set with the Admin SDK, so no rule needs a
 // get(). Documents, chunks and messages are written only by Cloud Functions
 // (Admin SDK bypasses these rules); clients read what their org owns.
 service cloud.firestore {

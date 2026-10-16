@@ -71,6 +71,10 @@
     { email: 'admin@globex.test', label: 'Globex admin' },
   ]
 
+  const UNAVAILABLE_MESSAGE = useEmulators
+    ? 'Could not sign in. Is the Auth emulator running?'
+    : 'Could not sign in. Check your connection and try again.'
+
   const authStore = useAuthStore()
   const route = useRoute()
   const router = useRouter()
@@ -98,7 +102,7 @@
       const code = error_ instanceof FirebaseError ? error_.code : ''
       error.value = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(code)
         ? 'Wrong email or password.'
-        : 'Could not sign in. Is the Auth emulator running?'
+        : UNAVAILABLE_MESSAGE
     } finally {
       loading.value = false
     }

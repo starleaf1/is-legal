@@ -3,6 +3,12 @@
   "private": true,
   "type": "module",
   "version": "0.0.0",
+  "description": "Compliance chatbot that answers whether an action is legal and allowed by your organization's policies",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/starleaf1/is-legal.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
