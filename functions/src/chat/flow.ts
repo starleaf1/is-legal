@@ -10,7 +10,7 @@ import {
   DISCLAIMER,
   MAX_TURNS,
 } from "../config";
-import {ai, geminiKey} from "../genkit";
+import {ai, geminiSecrets} from "../genkit";
 import {requireMember} from "../shared/auth";
 import {documentsCol, ID_PATTERN, orgRef} from "../shared/paths";
 import {
@@ -251,6 +251,6 @@ export const askIsLegalFlow = ai.defineFlow(
 );
 
 export const askIsLegal = onCallGenkit(
-  {secrets: [geminiKey], timeoutSeconds: 300, memory: "512MiB"},
+  {secrets: geminiSecrets, timeoutSeconds: 300, memory: "512MiB"},
   askIsLegalFlow
 );

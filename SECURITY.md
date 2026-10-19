@@ -37,4 +37,4 @@ Out of scope:
 - The seed accounts and their shared password. They exist only on the local
   emulators.
 - Weaknesses that come from how someone configured their own deployment,
-  such as a missing App Check setup or using an unpaid Gemini API key.
+  such as a missing App Check setup.

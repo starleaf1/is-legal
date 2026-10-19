@@ -3,6 +3,12 @@
 // indexes in firestore.indexes.json).
 
 export const REGION = "us-central1";
+// Vertex AI location for Gemini calls from deployed functions. Every model
+// below must be available there: gemini-3.5-flash isn't in us-central1, and
+// pay-as-you-go only serves it from "global" or the "us"/"eu" multi-regions.
+// "global" lets Google pick the processing region; use "us" or "eu" if
+// documents must be processed in one (and check the embedder is there too).
+export const VERTEX_LOCATION = "global";
 
 export const CHAT_MODEL = "gemini-3.5-flash";
 export const CLASSIFY_MODEL = "gemini-3.5-flash";

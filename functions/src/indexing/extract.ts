@@ -1,7 +1,6 @@
-import {googleAI} from "@genkit-ai/google-genai";
 import {logger} from "firebase-functions";
 import {CLASSIFY_MODEL, MAX_DOC_CHARS} from "../config";
-import {ai} from "../genkit";
+import {ai, gemini} from "../genkit";
 import {withRetry} from "../shared/concurrency";
 
 export interface ExtractedText {
@@ -52,7 +51,7 @@ const transcribePdf = async (
   }
   logger.info("PDF has no text layer; transcribing with Gemini", {totalPages});
   const {text} = await withRetry(() => ai.generate({
-    model: googleAI.model(CLASSIFY_MODEL),
+    model: gemini(CLASSIFY_MODEL),
     prompt: [
       {
         media: {

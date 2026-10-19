@@ -1,6 +1,6 @@
 import {logger} from "firebase-functions";
 import {onObjectFinalized} from "firebase-functions/storage";
-import {geminiKey} from "../genkit";
+import {geminiSecrets} from "../genkit";
 import {parseDocumentPath} from "../shared/paths";
 import {indexDocument} from "./pipeline";
 
@@ -8,7 +8,7 @@ import {indexDocument} from "./pipeline";
 // an org admin in the app (storage.rules check they're an admin of the org in
 // the path) or by the seed script.
 export const onDocumentUploaded = onObjectFinalized(
-  {secrets: [geminiKey], memory: "1GiB", timeoutSeconds: 540},
+  {secrets: geminiSecrets, memory: "1GiB", timeoutSeconds: 540},
   async (event) => {
     const {name, contentType, size, metadata} = event.data;
     const parsed = parseDocumentPath(name);

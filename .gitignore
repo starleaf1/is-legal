@@ -36,6 +36,14 @@ coverage/
 .env.*
 !.env.example
 *.local
+# Service account keys (GOOGLE_APPLICATION_CREDENTIALS); keep them outside
+# the repo anyway
+key.json
+*-key.json
+service-account*.json
+*-firebase-adminsdk-*.json
+*.pem
+*.p12
 
 # Editor and OS files
 .vscode/*

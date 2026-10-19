@@ -1,12 +1,11 @@
-import {googleAI} from "@genkit-ai/google-genai";
 import {EMBED_CONCURRENCY, EMBED_DIMS, EMBED_MODEL} from "../config";
-import {ai} from "../genkit";
+import {ai, geminiEmbedder} from "../genkit";
 import {mapWithConcurrency, withRetry} from "../shared/concurrency";
 
 // Options are passed on every call: ai.embedMany ignores config attached to
 // the embedder reference, and the default 3072 dimensions exceed Firestore's
 // 2048 vector limit.
-const embedder = googleAI.embedder(EMBED_MODEL);
+const embedder = geminiEmbedder(EMBED_MODEL);
 
 const embedOne = async (
   text: string,

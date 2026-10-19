@@ -20,7 +20,7 @@ The org provides all relevant documents including Code of Conduct, Company Polic
 
 - Google Cloud Storage for storing documents
 - Firebase Auth for authentication and access control
-- Genkit and Gemini for chat capabilities
+- Genkit and Gemini for chat capabilities (through Vertex AI when deployed)
 - Firestore for storing document classification and Storage paths
 - Vue for frontend
 - Firebase/Cloud Run Functions for back-end stuff.
@@ -85,7 +85,8 @@ Prerequisites:
   older, `scripts/with-java21.sh` uses `/usr/lib/jvm/java-21-openjdk-amd64`
   (override with `JAVA21_HOME`).
 - A Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey),
-  in `functions/.secret.local` (gitignored):
+  in `functions/.secret.local` (gitignored). The emulators run as a demo
+  project, which can't reach Vertex AI, so they use the Gemini API directly:
 
   ```
   GOOGLE_GENAI_API_KEY=your-key
@@ -174,7 +175,11 @@ deployment is one Firebase project, which can host any number of orgs.
 
 1. Create a Firebase project and upgrade it to the Blaze plan (Cloud
    Functions and Secret Manager need it). Enable Firestore, Storage and
-   Authentication with the Email/Password provider.
+   Authentication with the Email/Password provider. Under Authentication →
+   Settings → User actions, turn off **Enable create (sign-up)** and
+   **Enable deletion**. Users are created with the Admin SDK (step 6), which
+   these settings don't affect; left on, anyone can create accounts through
+   the Auth API, and a user of a shared demo account can delete it.
 2. Sign in and select your project for this checkout:
 
    ```sh
@@ -185,12 +190,13 @@ deployment is one Firebase project, which can host any number of orgs.
    `firebase use` stores the choice on your machine, not in the repo. The
    committed `.firebaserc` points at the demo project, so a `firebase deploy`
    without a selected project fails instead of reaching a real one.
-3. Store your Gemini key as a secret. Read [Privacy](#privacy) before
-   choosing which key to use.
-
-   ```sh
-   firebase functions:secrets:set GOOGLE_GENAI_API_KEY
-   ```
+3. Enable the
+   [Vertex AI API](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com)
+   for the project. Deployed functions call Gemini through Vertex AI as the
+   default compute service account and bill it to the project, so they need
+   no API key. If that service account doesn't have the Editor role (some
+   organizations turn off that default grant), give it Vertex AI User
+   (`roles/aiplatform.user`).
 
 4. Register a web app in the Firebase console, copy `.env.example` to
    `.env.production.local` and fill in the app's config.
@@ -208,19 +214,27 @@ deployment is one Firebase project, which can host any number of orgs.
 
 Before real use, consider App Check on the callables, budget alerts on the
 project, and a region near your users (`REGION` in `functions/src/config.ts`
-and `FUNCTIONS_REGION` in `src/plugins/firebase.ts`). `setGlobalOptions` in
+and `FUNCTIONS_REGION` in `src/plugins/firebase.ts`). Gemini runs on Vertex
+AI's `global` endpoint, which doesn't pin the processing region; if you need
+that, set `VERTEX_LOCATION` to a multi-region (`us` or `eu`) that serves the
+models. `setGlobalOptions` in
 `functions/src/index.ts` caps each function at 10 instances.
 
 ## Privacy
 
-Uploaded documents and employees' questions are sent to the Gemini API to
-classify, embed and answer them. On the Gemini API's unpaid tier, Google may
-use that content to improve its products and human reviewers may read it;
-Google asks you not to send sensitive, confidential or personal information
-there. Use a key on a paid tier for real documents, and check the current
-[Gemini API terms](https://ai.google.dev/gemini-api/terms) yourself. The
-sample documents in `functions/seed-data/` are fictional, so the local demo
-is fine on a free key.
+Uploaded documents and employees' questions are sent to Gemini to classify,
+embed and answer them. A deployment calls Gemini through Vertex AI, which is
+covered by your Google Cloud terms; check
+[Vertex AI data governance](https://cloud.google.com/vertex-ai/generative-ai/docs/data-governance)
+yourself before using real documents.
+
+The emulators use the Gemini API with your key instead. On its unpaid tier,
+Google may use that content to improve its products and human reviewers may
+read it; Google asks you not to send sensitive, confidential or personal
+information there (see the
+[Gemini API terms](https://ai.google.dev/gemini-api/terms)). The sample
+documents in `functions/seed-data/` are fictional, so the local demo is fine
+on a free key.
 
 ## Contributing
 

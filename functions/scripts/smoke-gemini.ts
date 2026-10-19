@@ -3,19 +3,24 @@
 //   1. Embeddings with a task type at 768 dimensions, for each candidate model.
 //   2. One generate call combining a tool with the structured answer schema,
 //      in both native and simulated modes.
-// Run: npm --prefix functions run smoke:gemini
-import {googleAI} from "@genkit-ai/google-genai";
+// Run: npm --prefix functions run smoke:gemini   (Gemini Developer API key)
+// Set GCLOUD_PROJECT to a real project to check Vertex AI instead, using
+// application default credentials.
 import {z} from "genkit";
 import {simulateConstrainedGeneration} from "genkit/model";
-import {CHAT_MODEL, EMBED_DIMS} from "../src/config";
-import {ai} from "../src/genkit";
+import {CHAT_MODEL, EMBED_DIMS, VERTEX_LOCATION} from "../src/config";
+import {ai, gemini, geminiEmbedder, USE_VERTEX} from "../src/genkit";
 import {AnswerSchema} from "../src/shared/schemas";
 import {loadGeminiKey} from "./load-secret";
 
-loadGeminiKey();
-if (!process.env.GOOGLE_GENAI_API_KEY && !process.env.GEMINI_API_KEY) {
-  console.error("Set GOOGLE_GENAI_API_KEY or create functions/.secret.local");
-  process.exit(1);
+if (USE_VERTEX) {
+  console.log(`Vertex AI: ${process.env.GCLOUD_PROJECT}, ${VERTEX_LOCATION}`);
+} else {
+  loadGeminiKey();
+  if (!process.env.GOOGLE_GENAI_API_KEY && !process.env.GEMINI_API_KEY) {
+    console.error("Set GOOGLE_GENAI_API_KEY or create functions/.secret.local");
+    process.exit(1);
+  }
 }
 
 const results: Array<{check: string; ok: boolean; detail: string}> = [];
@@ -31,7 +36,7 @@ const checkEmbedder = async (
   for (const taskType of taskTypes) {
     try {
       const [result] = await ai.embed({
-        embedder: googleAI.embedder(model),
+        embedder: geminiEmbedder(model),
         content: "Employees may accept gifts worth up to USD 50.",
         options: {taskType, outputDimensionality: EMBED_DIMS},
       });
@@ -68,7 +73,7 @@ const checkToolsWithSchema = async (mode: "native" | "simulated") => {
   );
   try {
     const response = await ai.generate({
-      model: googleAI.model(CHAT_MODEL),
+      model: gemini(CHAT_MODEL),
       system: "You are a compliance assistant. Always call searchDocuments " +
         "before answering, then answer citing passages as [ref].",
       prompt: "A vendor offered me a USD 120 bottle of wine. Can I accept?",

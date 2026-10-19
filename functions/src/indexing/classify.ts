@@ -1,6 +1,5 @@
-import {googleAI} from "@genkit-ai/google-genai";
 import {CLASSIFY_CHARS, CLASSIFY_MODEL} from "../config";
-import {ai} from "../genkit";
+import {ai, gemini} from "../genkit";
 import {withRetry} from "../shared/concurrency";
 import {
   type Category,
@@ -42,7 +41,7 @@ export const classifyDocument = async (params: {
   ].join("\n");
 
   const {output} = await withRetry(() => ai.generate({
-    model: googleAI.model(CLASSIFY_MODEL),
+    model: gemini(CLASSIFY_MODEL),
     system: SYSTEM,
     prompt,
     output: {schema: ClassificationSchema},

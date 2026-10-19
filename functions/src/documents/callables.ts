@@ -1,7 +1,7 @@
 import {getFirestore} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
 import {HttpsError, onCall} from "firebase-functions/https";
-import {geminiKey} from "../genkit";
+import {geminiSecrets} from "../genkit";
 import {indexDocument} from "../indexing/pipeline";
 import {requireAdmin} from "../shared/auth";
 import {
@@ -45,7 +45,7 @@ export const deleteDocument = onCall(async ({auth, data}) => {
 });
 
 export const reindexDocument = onCall(
-  {secrets: [geminiKey], memory: "1GiB", timeoutSeconds: 540},
+  {secrets: geminiSecrets, memory: "1GiB", timeoutSeconds: 540},
   async ({auth, data}) => {
     const {orgId} = requireAdmin(auth);
     const documentId = parseDocumentId(data);
